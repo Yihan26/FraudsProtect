@@ -14,7 +14,7 @@
 
 function corsHeaders(request, env) {
   const origin = request?.headers.get('Origin');
-  const allowed = env?.ALLOWED_ORIGIN || 'https://artificial-rhapsody.github.io';
+  const allowed = env?.ALLOWED_ORIGIN || 'https://yihan26.github.io';
   return {
     'Access-Control-Allow-Origin': allowed === '*' || origin === allowed ? (origin || allowed) : allowed,
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -23,10 +23,10 @@ function corsHeaders(request, env) {
   };
 }
 
-function jsonResponse(data, status = 200, request, env) {
+function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 'Content-Type': 'application/json', ...corsHeaders(request, env) },
+    headers: { 'Content-Type': 'application/json' },
   });
 }
 
@@ -335,7 +335,7 @@ async function handleAdminDelete(request, env) {
 
 // ─── Main router ────────────────────────────────────────────
 
-export default {
+const router = {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const { pathname } = url;
@@ -371,5 +371,16 @@ export default {
 
     // 404
     return jsonResponse({ ok: false, error: 'Not found' }, 404);
+  },
+};
+
+export default {
+  async fetch(request, env, ctx) {
+    const response = await router.fetch(request, env, ctx);
+    const headers = new Headers(response.headers);
+    for (const [name, value] of Object.entries(corsHeaders(request, env))) {
+      headers.set(name, value);
+    }
+    return new Response(response.body, { status: response.status, headers });
   },
 };

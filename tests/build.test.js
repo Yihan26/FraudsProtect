@@ -82,3 +82,28 @@ test('homepage editor blocks navigation inside its preview frame', () => {
   assert.match(source, /event\.target\.closest\('a, button, form'\)/);
   assert.match(source, /event\.preventDefault\(\)/);
 });
+
+test('Worker applies the configured CORS origin to preflight and API responses', async () => {
+  const source = fs.readFileSync(path.join(__dirname, '..', 'workers', 'src', 'index.js'), 'utf8');
+  const { default: worker } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+  const env = { ALLOWED_ORIGIN: 'https://yihan26.github.io' };
+  for (const [route, method, body, status] of [
+    ['/api/login', 'OPTIONS', undefined, 204],
+    ['/', 'GET', undefined, 200],
+    ['/api/login', 'POST', {}, 400],
+    ['/api/register', 'POST', {}, 400],
+    ['/api/me', 'GET', undefined, 401],
+    ['/api/admin/publish', 'POST', {}, 403],
+    ['/api/admin/delete', 'POST', {}, 403],
+    ['/missing', 'GET', undefined, 404],
+  ]) {
+    const response = await worker.fetch(new Request(`https://api.example.invalid${route}`, {
+      method,
+      headers: { Origin: env.ALLOWED_ORIGIN, 'Content-Type': 'application/json' },
+      ...(body ? { body: JSON.stringify(body) } : {}),
+    }), env, {});
+    assert.equal(response.status, status, route);
+    assert.equal(response.headers.get('Access-Control-Allow-Origin'), env.ALLOWED_ORIGIN, route);
+    assert.equal(response.headers.get('Vary'), 'Origin', route);
+  }
+});

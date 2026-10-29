@@ -1,4 +1,7 @@
 /.wrangler
+/workers/.wrangler
+/workers/.dev.vars*
+/workers/.env*
 /workers/node_modules
 /node_modules
 /dev-page

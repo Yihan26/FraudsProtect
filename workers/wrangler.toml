@@ -4,8 +4,8 @@ compatibility_date = "2026-08-16"
 
 [vars]
 ENVIRONMENT = "production"
-ALLOWED_ORIGIN = "https://artificial-rhapsody.github.io"
-GITHUB_REPOSITORY = "Artificial-rhapsody/Charity-test"
+ALLOWED_ORIGIN = "https://yihan26.github.io"
+GITHUB_REPOSITORY = "Yihan26/FraudsProtect"
 GITHUB_BRANCH = "main"
 
 # Create KV namespace with: wrangler kv namespace create USERS_KV
